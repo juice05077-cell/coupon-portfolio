@@ -1,0 +1,18 @@
+/* Scoped styles: formal chapter charts keep their existing UI. */
+.dashboard-loading-frame{position:relative}
+.loading-top-entry{display:flex;justify-content:flex-end;align-items:center;min-height:48px;padding:10px 16px;gap:12px}
+.loading-top-entry a,.loading-top-entry .loading-return{font-size:13px;font-weight:400;color:var(--muted);text-decoration:none;background:none;border:0;padding:4px 0}
+.loading-top-entry a:hover,.loading-top-entry .loading-return:hover{text-decoration:underline}
+.loading-panel{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);text-align:center}
+.loading-panel[hidden],.loading-panel [hidden]{display:none}
+.loading-content{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%}
+.loading-panel .loading-title{font-size:18px;line-height:1.5;color:var(--ink);margin:0;font-weight:500}
+.loading-panel .loading-description{font-size:14px;line-height:1.7;color:var(--muted);margin:0}
+.loading-actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.loading-actions button,.loading-actions a{font:inherit;font-size:14px;line-height:1.5;border-radius:6px;padding:9px 17px;cursor:pointer;text-decoration:none;margin:0}
+.loading-primary{background:var(--purple);color:#302D35;border:1px solid var(--purple)}
+.loading-secondary{background:transparent;color:var(--ink);border:1px solid var(--purple)}
+.loading-actions .loading-text{border:0;background:transparent;color:var(--muted);padding:4px;text-decoration:underline;text-underline-offset:4px;border-radius:0}
+.loading-return{border:0;background:none;padding:4px 0;color:var(--muted);font-size:13px;cursor:pointer}
+.loading-panel .chart-spinner{flex-shrink:0}
+@media(max-width:600px){.loading-panel{padding:18px 12px}.loading-panel .loading-title{font-size:16px}.loading-actions{gap:10px}.loading-actions button,.loading-actions a{font-size:13px;padding:8px 12px}}

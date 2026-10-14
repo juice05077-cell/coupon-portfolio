@@ -1,0 +1,19 @@
+.posters-page main{padding-bottom:60px}
+.posters-page .context{padding-right:12px}
+.posters-page .capability h2{font-size:16px;margin:0}
+.poster-tools{margin:0 0 18px}
+.poster-zoom-hint{display:block;text-align:right;padding-top:6px;font-size:11px;font-weight:400;line-height:1.5;color:var(--muted)}
+.posters-page figure{margin:0 0 44px}
+.poster-open{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
+.poster-open img{display:block;width:100%;min-width:0;height:auto;border:0}
+.posters-page figcaption{display:block;padding-top:14px}
+.posters-page figcaption h2{font-size:17px;color:var(--ink);font-weight:500;margin:0 0 8px}
+.posters-page figcaption p{font-size:14px;line-height:1.8;margin:0}
+#poster-viewer{padding:0;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:min(1600px,96vw);max-width:96vw;max-height:94dvh;overflow:auto}
+#poster-viewer::backdrop{background:#302d35b8}
+.viewer-bar{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--line);font-size:14px}
+#viewer-close{min-width:64px;min-height:44px;border:0;background:none;color:var(--ink)}
+.viewer-image{padding:12px}
+#viewer-img{display:block;width:100%;height:auto}
+.poster-modal-open{overflow:hidden}
+@media(max-width:900px){.posters-page .context{position:static;height:auto;max-height:none;overflow:visible;padding:24px 0 16px;z-index:auto}.posters-page .context .eyebrow{display:block}.posters-page main{padding-top:30px}.posters-page .project-title{font-size:24px}.posters-page figure{margin-bottom:32px}.viewer-image{padding:6px}.viewer-bar{padding:6px 10px}#poster-viewer{max-height:calc(100dvh - 24px - env(safe-area-inset-bottom))}}
