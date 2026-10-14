@@ -126,3 +126,18 @@ main{padding-bottom:85vh}
  .masthead+.layout>.context{height:auto}.context-inner{max-height:calc(85dvh - 52px - var(--masthead-height))}
  .entry-brand{left:5%}
 }
+
+/* One shared mobile guide and report; desktop layout is unchanged. */
+.mobile-reading-bar,.mobile-report-entry,#report-top{display:none}
+@media(max-width:900px){
+ .o2o-page .mobile-bar{display:none}
+ .o2o-page.mobile-guide .layout>.context{position:static;max-height:none;overflow:visible;padding:24px 0;border:0}
+ .o2o-page.mobile-guide .context-inner{display:block;position:static;max-height:none;overflow:visible;padding:0;border:0}
+ .o2o-page.mobile-guide main{display:none}
+ .o2o-page:not(.mobile-guide) .layout>.context{display:none}
+ .o2o-page .mobile-report-entry{display:inline-block;min-height:44px;padding:10px 0;color:#795b86}
+ .o2o-page .mobile-reading-bar{display:flex;position:sticky;top:var(--masthead-height);z-index:4;background:var(--bg);border-bottom:1px solid var(--line);margin-bottom:20px}
+ .mobile-reading-bar button{min-height:44px;border:0;background:none;padding:8px 0;color:#795b86;font-size:13px}
+ .o2o-page #report-top:not([hidden]){display:block;position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));z-index:20;border:1px solid var(--purple);border-radius:12px;background:var(--bg);color:#795b86;padding:9px 12px;min-height:44px;font-size:12px;box-shadow:0 3px 12px #302d351a}
+ .o2o-page #return-reading{bottom:calc(68px + env(safe-area-inset-bottom))}
+}

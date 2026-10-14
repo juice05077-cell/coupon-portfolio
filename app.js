@@ -21,7 +21,11 @@ for(const item of reportChapters.flatMap(chapter=>chapter.children||[chapter])){
  if(chapterParts[item.id])item.parts=chapterParts[item.id];
  if(document.getElementById(item.id)){item.anchor=item.id;if(!item.group)item.group=['source','cleaning','metrics'].includes(item.id)?'processing':['threshold','discount','scale','stratification','case','timing'].includes(item.id)?'methods':['conclusions','business','limitations','summary'].includes(item.id)?'results':undefined;}
 }
-const capabilities=[
+const capabilities=operationsView?[
+ {id:"behavior",title:"用户行为分析",text:"围绕优惠券领取与核销，分析距离、券类型、优惠力度及核销时间等因素与用户行为的关系。",entries:["overview","distance","threshold","discount","timing"]},
+ {id:"insights",title:"用户特征洞察",text:"通过分组比较，识别不同条件下的核销差异，归纳用户优惠券使用特征。",entries:["scale","stratification","case"]},
+ {id:"strategy",title:"策略优化建议",text:"结合分析结果提出优惠券使用及运营优化建议，并通过 Tableau 制作交互式仪表板呈现分析结论。",entries:["conclusions","business","tableau","full-report","limitations","summary"]}
+]:[
  {id:'processing',title:'数据处理',text:'使用 SQL 清洗与分类百万级 O2O 用户行为数据，识别异常状态，统一核销指标口径。',entries:['source','cleaning','metrics']},
  {id:'methods',title:'分析方法',text:'分析距离、券类型、门槛及优惠力度与核销率的关系，针对小样本极端值进行领取规模分层比较。',entries:['distance','threshold','discount','scale','stratification','case']},
  {id:'results',title:'项目成果',text:'使用 Tableau 制作交互式仪表板及分析报告，归纳核销特征并提出优化建议。',entries:['tableau','full-report','conclusions','business','limitations']}
@@ -29,6 +33,12 @@ const capabilities=[
 const entries=new Map(reportChapters.flatMap(c=>c.children||[c]).map(c=>[c.id,c]));
 entries.set('tableau',{id:'tableau',title:'Tableau 交互式仪表板',anchor:'tableau-dashboard',group:'results'});
 entries.set('full-report',{id:'full-report',title:'完整分析报告（PDF）',anchor:'report-download',group:'results'});
+// Reassign only the operations guide; report order and paragraph anchors stay shared.
+if(operationsView){
+ for(const chapter of entries.values())chapter.group=undefined;
+ for(const capability of capabilities)for(const id of capability.entries)entries.get(id).group=capability.id;
+}
+const defaultGroup=operationsView?'behavior':'methods';
 const available=c=>c.anchor&&document.getElementById(c.anchor);
 function entryHTML(c,showParts=false){
  if(!available(c))return `<span class="pending-entry">${c.title}<small>${c.pending||'待上线'}</small></span>`;
@@ -39,15 +49,22 @@ function entryHTML(c,showParts=false){
 
 }
 document.querySelector('#report-directory').innerHTML=reportChapters.map(c=>c.children?`<div class="directory-section"><div class="directory-heading">${c.title}</div>${c.children.map(x=>entryHTML(x)).join('')}</div>`:entryHTML(c)).join('');
-document.querySelector('#capability-groups').innerHTML=capabilities.map((c,i)=>`<section class="capability" data-group="${c.id}"><h3><button type="button" class="group-toggle" aria-expanded="${c.id==='methods'}" aria-controls="links-${c.id}"><span>${i+1}. ${c.title}</span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button></h3><p class="resume-text">${c.text}</p><nav id="links-${c.id}" aria-label="${c.title}对应章节" ${c.id==='methods'?'':'hidden'}>${c.entries.map(id=>entryHTML(entries.get(id),true)).join('')}</nav></section>`).join('');
+document.querySelector('#capability-groups').innerHTML=capabilities.map((c,i)=>`<section class="capability" data-group="${c.id}"><h3><button type="button" class="group-toggle" aria-expanded="${c.id===defaultGroup}" aria-controls="links-${c.id}"><span>${i+1}. ${c.title}</span><svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button></h3><p class="resume-text">${c.text}</p><nav id="links-${c.id}" aria-label="${c.title}对应章节" ${c.id===defaultGroup?'':'hidden'}>${c.entries.map(id=>entryHTML(entries.get(id),true)).join('')}</nav></section>`).join('');
 const targets=new Map();for(const chapter of entries.values())if(available(chapter)){targets.set(chapter.anchor,{chapter,label:chapter.title});for(const p of chapter.parts||[])if(document.getElementById(p.anchor))targets.set(p.anchor,{chapter,label:`${chapter.title} · ${p.title}`})}
+targets.set('report-start',{chapter:{id:'report-start'},label:'报告开头'});
 targets.set('full-report',{chapter:entries.get('full-report'),label:'完整分析报告正文'});
 const parts=[...targets.keys()].map(id=>document.getElementById(id)).sort((a,b)=>a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1),context=document.querySelector('.context'),toggle=document.querySelector('#nav-toggle');
 const media=matchMedia('(max-width:900px)');
 // Focusing controls inside the sticky navigation must not scroll the report.
 context.addEventListener('mousedown',e=>{const control=e.target.closest('button,summary');if(control){e.preventDefault();control.focus({preventScroll:true})}});
 let active='distance',marker=null,resizing=false,lastWidth=innerWidth,travel=false,settleTimer;
-const offset=()=>document.querySelector('.masthead').getBoundingClientRect().height+(media.matches?document.querySelector('.mobile-bar').getBoundingClientRect().height+12:24);
+function mobileReading(reading){document.body.classList.toggle('mobile-guide',!reading);document.querySelector('#report-top').hidden=true;}
+function updateReportTop(){document.querySelector('#report-top').hidden=!media.matches||document.body.classList.contains('mobile-guide')||scrollY<500;}
+document.querySelector('#back-guide').addEventListener('click',()=>{history.pushState(null,'',location.pathname+location.search);readingReturn=null;restore();});
+document.querySelector('#report-top').addEventListener('click',()=>{history.replaceState(history.state,'','#report-start');go('report-start',true);});
+addEventListener('scroll',updateReportTop,{passive:true});
+media.addEventListener('change',()=>{restore();updateReportTop();});
+const offset=()=>document.querySelector('.masthead').getBoundingClientRect().height+(media.matches?document.querySelector('.mobile-reading-bar').getBoundingClientRect().height+12:24);
 function expandGroup(id,open){const group=document.querySelector(`[data-group="${id}"]`);if(!group)return;group.querySelector('button').setAttribute('aria-expanded',String(open));group.querySelector('nav').hidden=!open}
 function expandChapter(id,open){const button=document.querySelector('[data-toggle-chapter="'+id+'"]');if(!button)return;button.setAttribute('aria-expanded',String(open));document.getElementById(button.getAttribute('aria-controls')).hidden=!open}
 document.querySelectorAll('.chapter-toggle').forEach(button=>button.addEventListener('click',()=>expandChapter(button.dataset.toggleChapter,button.getAttribute('aria-expanded')!=='true')));
@@ -65,15 +82,15 @@ toggle.addEventListener('click',()=>panel(toggle.getAttribute('aria-expanded')!=
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&context.classList.contains('nav-open')){panel(false);toggle.focus({preventScroll:true})}});
 document.addEventListener('click',e=>{if(media.matches&&!context.contains(e.target))panel(false)});
 function remember(){const nodes=[...document.querySelectorAll('main h1,article h2,article p,figure,.reading-label')];const line=offset();const el=nodes.find(n=>n.getBoundingClientRect().bottom>line);if(el){const r=el.getBoundingClientRect();marker={el,fraction:Math.max(0,Math.min(1,(line-r.top)/r.height)),gap:r.top>line?r.top-line:0}}}
-function sync(){if(resizing||travel)return;let id=parts[0].id;for(const el of parts)if(el.getBoundingClientRect().top<=offset()+45)id=el.id;select(id);remember()}
+function sync(){if(resizing||travel||(media.matches&&document.body.classList.contains('mobile-guide')))return;let id=parts[0].id;for(const el of parts)if(el.getBoundingClientRect().top<=offset()+45)id=el.id;select(id);remember()}
 function finishTravel(){travel=false;remember()}
-function go(id,smooth=false){if(!targets.has(id))return;clearTimeout(settleTimer);travel=true;select(id,true);if(media.matches){panel(false);if(context.contains(document.activeElement))toggle.focus({preventScroll:true})}document.getElementById(id).scrollIntoView({behavior:smooth&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'instant'});settleTimer=setTimeout(finishTravel,1000);remember()}
-document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a||!targets.has(a.hash.slice(1)))return;e.preventDefault();if(location.hash!==a.hash)history.pushState(null,'',a.hash);go(a.hash.slice(1),true)});
+function go(id,smooth=false){if(!targets.has(id))return;if(media.matches)mobileReading(true);clearTimeout(settleTimer);travel=true;select(id,true);if(media.matches){panel(false);if(context.contains(document.activeElement))document.querySelector('#back-guide').focus({preventScroll:true})}document.getElementById(id).scrollIntoView({behavior:smooth&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'instant'});settleTimer=setTimeout(finishTravel,1000);remember()}
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a||!targets.has(a.hash.slice(1)))return;e.preventDefault();const hash=media.matches&&context.contains(a)&&a.hash==='#report-download'?'#report-start':a.hash;if(location.hash!==hash)history.pushState(null,'',hash);go(hash.slice(1),true)});
 history.scrollRestoration='manual';
-let historyFrame;function restore(){cancelAnimationFrame(historyFrame);historyFrame=requestAnimationFrame(()=>{const id=location.hash.slice(1);if(targets.has(id))go(id);else if(!location.hash){travel=false;scrollTo(0,0);sync()}})}
+let historyFrame;function restore(){cancelAnimationFrame(historyFrame);historyFrame=requestAnimationFrame(()=>{const id=location.hash.slice(1);if(targets.has(id))go(id);else {if(media.matches)mobileReading(false);travel=false;scrollTo(0,0);sync()}})}
 addEventListener('popstate',restore);addEventListener('hashchange',restore);
 addEventListener('scroll',()=>{if(travel){clearTimeout(settleTimer);settleTimer=setTimeout(finishTravel,120)}else if(innerWidth===lastWidth)sync()},{passive:true});
-addEventListener('resize',()=>{if(innerWidth===lastWidth)return;resizing=true;lastWidth=innerWidth;const saved=marker;select(active);requestAnimationFrame(()=>{if(saved){const r=saved.el.getBoundingClientRect();scrollBy(0,r.top+r.height*saved.fraction-offset()-saved.gap)}resizing=false;remember()})});
+addEventListener('resize',()=>{if(innerWidth===lastWidth)return;resizing=true;lastWidth=innerWidth;const saved=media.matches&&document.body.classList.contains('mobile-guide')?null:marker;select(active);requestAnimationFrame(()=>{if(saved){const r=saved.el.getBoundingClientRect();scrollBy(0,r.top+r.height*saved.fraction-offset()-saved.gap)}resizing=false;remember()})});
 // Restore once on entry/history, not after third-party iframe loading.
 select('background',true);restore();addEventListener('pageshow',restore);
 
